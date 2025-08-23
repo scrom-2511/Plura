@@ -4,7 +4,7 @@ import { contextProvider, contextSetter } from "./redisHandler.utils";
 export const streamModel = async (model: ModelTypes, controller: ReadableStreamDefaultController, prompt:string, userID:string, apikey:string) => {
   const context = await contextProvider(userID, model);
   const systemContent = context
-    ? `You are an Ai assistant.`
+    ? `You are an AI assistant. Use the following context to maintain a natural, continuous flow in our conversation: ${context}. Do not greet me in every response. Avoid phrases like "from the context you provided"—your responses should feel seamless and conversational, as if you already know the context.`
     : "You are an AI assistant";
   console.log(context);
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -40,6 +40,7 @@ export const streamModel = async (model: ModelTypes, controller: ReadableStreamD
         const conversation:Message = {prompt, response:finalResponse} 
         await contextSetter(userID, context, model, conversation)
         controller.close()
+        await contextSetter(userID, context, model, conversation)
         return finalResponse
       }
 
