@@ -7,7 +7,7 @@ export const POST = async (req: NextRequest) => {
 
   const stream = new ReadableStream({
     start(controller) {
-      streamModel(ModelTypes.MISTRAL, controller, prompt, userID, process.env.OPEN_ROUTER_API_KEY1 as string);
+      streamModel(ModelTypes.MISTRAL, controller, prompt, userID, process.env.OPEN_ROUTER_API_KEY2 as string);
     },
   });
   return new NextResponse(stream)
