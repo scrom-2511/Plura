@@ -40,6 +40,7 @@ export const streamModel = async (model: ModelTypes, controller: ReadableStreamD
         controller.enqueue(JSON.stringify({ model, done }));
         const conversation:Message = {prompt, response:finalResponse} 
         await contextSetter(userID, context, model, conversation)
+        controller.close()
         return finalResponse
       }
 
