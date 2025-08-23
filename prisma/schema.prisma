@@ -8,33 +8,36 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  username String
-  email    String @unique
-  password String
-  chats    Chat[]
+  id           Int            @id @default(autoincrement())
+  username     String
+  email        String         @unique
+  password     String
+  chats        Chat[]
+  Conversation Conversation[]
+}
+
+model Conversation {
+  id             Int      @id @default(autoincrement())
+  conversationID String   @unique
+  gpt            String
+  mistral        String
+  llama          String
+  deepseek       String
+  chat           Chat     @relation(fields: [chatID], references: [chatUUID])
+  user           User     @relation(fields: [userID], references: [id])
+  userID         Int
+  chatID         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Chat {
-  id                 Int           @id @default(autoincrement())
-  chatUUIDUnique     String        @unique
-  chatName           String
-  gptChatSummary     String
-  llamaChatSummary   String
-  grokChatSummary    String
-  mistralChatSummary String
-  user               User          @relation(fields: [userID], references: [id])
-  userID             Int
-  ChatHistories      ChatHistory[]
-}
-
-model ChatHistory {
-  id       Int    @id @default(autoincrement())
-  prompt   String
-  gpt      String
-  llama    String
-  grok     String
-  mistral  String
-  chat     Chat   @relation(fields: [chatUUID], references: [chatUUIDUnique])
-  chatUUID String
+  id            Int            @id @default(autoincrement())
+  chatUUID      String         @unique
+  chatName      String
+  user          User           @relation(fields: [userID], references: [id])
+  userID        Int
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  conversations Conversation[]
 }
