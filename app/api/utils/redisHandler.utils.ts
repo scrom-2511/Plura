@@ -8,13 +8,13 @@ const connectClient = async () => {
     await client.connect();
   }
 };
-export const contextProvider = async (userID: string, model: ModelTypes) => {
+export const contextProvider = async (userID: number, model: ModelTypes) => {
   await connectClient();
   const context = await client.get(`${userID}:${model}`);
   return context;
 };
 
-export const contextSetter = async (userID: string, context: string | null, model: ModelTypes, conversation: Message) => {
+export const contextSetter = async (userID: number, context: string | null, model: ModelTypes, conversation: Message) => {
   await connectClient();
   if (!context) {
     await client.set(`${userID}:${model}`, JSON.stringify([conversation]));
