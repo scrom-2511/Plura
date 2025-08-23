@@ -37,7 +37,6 @@ export const streamModel = async (model: ModelTypes, controller: ReadableStreamD
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
-        controller.enqueue(JSON.stringify({ model, done }));
         const conversation:Message = {prompt, response:finalResponse} 
         await contextSetter(userID, context, model, conversation)
         controller.close()
@@ -64,7 +63,7 @@ export const streamModel = async (model: ModelTypes, controller: ReadableStreamD
             const content = parsed.choices[0].delta.content;
             if (content) {
               console.log(content);
-              controller.enqueue(JSON.stringify({ model, content }));
+              controller.enqueue(content);
               finalResponse += content;
             }
           } catch (e) {
