@@ -1,7 +1,8 @@
 import { Message, ModelTypes } from "@/types/types";
 import { contextProvider, contextSetter } from "./redisHandler.utils";
+import { prisma } from "../lib/prisma";
 
-export const streamModel = async (model: ModelTypes, controller: ReadableStreamDefaultController, prompt:string, userID:string, apikey:string) => {
+export const streamModel = async (model: ModelTypes, controller: ReadableStreamDefaultController, prompt:string, userID:number, apikey:string, chatID: string, conversationID:string) => {
   const context = await contextProvider(userID, model);
   const systemContent = context
     ? `You are an AI assistant. Use the following context to maintain a natural, continuous flow in our conversation: ${context}. Do not greet me in every response. Avoid phrases like "from the context you provided"—your responses should feel seamless and conversational, as if you already know the context.`
@@ -41,6 +42,37 @@ export const streamModel = async (model: ModelTypes, controller: ReadableStreamD
         await contextSetter(userID, context, model, conversation)
         controller.close()
         await contextSetter(userID, context, model, conversation)
+        try {
+          await prisma.chat.upsert({
+            where: { chatUUID: chatID },
+            update: {},
+            create: {
+              chatUUID: chatID,
+              chatName: "New Chat",
+              userID,
+            },
+          });
+          const data: any = {
+            prompt,
+            conversationID,
+            chatID,
+            userID,
+          };
+          
+          if (model === ModelTypes.GPT) {
+            data.gpt = finalResponse;
+          } else if (model === ModelTypes.DEEPSEEK) {
+            data.deepseek = finalResponse;
+          } else if (model === ModelTypes.MISTRAL) {
+            data.mistral = finalResponse;
+          } else if (model === ModelTypes.QWEN) {
+            data.qwen = finalResponse;
+          }
+          
+          await prisma.conversation.create({ data });
+        } catch (error) {
+          console.error("Failed to save conversation:", error);
+        }
         return finalResponse
       }
 
