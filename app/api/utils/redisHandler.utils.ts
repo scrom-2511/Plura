@@ -28,11 +28,3 @@ export const contextSetter = async (userID: string, context: string | null, mode
     await client.set(`${userID}:${model}`, JSON.stringify(existingData));
   }
 };
-
-// const [gptContext, deepseekContext, mistralContext, llamaContext] = await Promise.all([
-//     client.get(`${ModelTypes.GPT}:${userID}`),
-//     client.get(`${ModelTypes.DEEPSEEK}:${userID}`),
-//     client.get(`${ModelTypes.MISTRAL}:${userID}`),
-//     client.get(`${ModelTypes.META_LLAMA}:${userID}`),
-//   ]);
-//   return {gptContext, deepseekContext, mistralContext, llamaContext};
