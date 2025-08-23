@@ -39,40 +39,41 @@ export const streamModel = async (model: ModelTypes, controller: ReadableStreamD
       const { done, value } = await reader.read();
       if (done) {
         const conversation:Message = {prompt, response:finalResponse} 
-        await contextSetter(userID, context, model, conversation)
-        controller.close()
-        await contextSetter(userID, context, model, conversation)
-        try {
-          await prisma.chat.upsert({
-            where: { chatUUID: chatID },
-            update: {},
-            create: {
-              chatUUID: chatID,
-              chatName: "New Chat",
+        await contextSetter(userID, context, model, conversation);
+        controller.close();
+        (async ()=>{
+          try {
+            await prisma.chat.upsert({
+              where: { chatUUID: chatID },
+              update: {},
+              create: {
+                chatUUID: chatID,
+                chatName: "New Chat",
+                userID,
+              },
+            });
+            const data: any = {
+              prompt,
+              conversationID,
+              chatID,
               userID,
-            },
-          });
-          const data: any = {
-            prompt,
-            conversationID,
-            chatID,
-            userID,
-          };
-          
-          if (model === ModelTypes.GPT) {
-            data.gpt = finalResponse;
-          } else if (model === ModelTypes.DEEPSEEK) {
-            data.deepseek = finalResponse;
-          } else if (model === ModelTypes.MISTRAL) {
-            data.mistral = finalResponse;
-          } else if (model === ModelTypes.QWEN) {
-            data.qwen = finalResponse;
+            };
+            
+            if (model === ModelTypes.GPT) {
+              data.gpt = finalResponse;
+            } else if (model === ModelTypes.DEEPSEEK) {
+              data.deepseek = finalResponse;
+            } else if (model === ModelTypes.MISTRAL) {
+              data.mistral = finalResponse;
+            } else if (model === ModelTypes.QWEN) {
+              data.qwen = finalResponse;
+            }
+            
+            await prisma.conversation.create({ data });
+          } catch (error) {
+            console.error("Failed to save conversation:", error);
           }
-          
-          await prisma.conversation.create({ data });
-        } catch (error) {
-          console.error("Failed to save conversation:", error);
-        }
+        })()
         return finalResponse
       }
 
