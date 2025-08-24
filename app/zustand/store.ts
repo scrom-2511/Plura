@@ -42,20 +42,20 @@ type Chat = {
   chatName:string
 }
 
-type ChatStore = {
+type ChatHistoryStore = {
   chats: Chat[]
   addChat: (chat: Chat) => void
-  setChat: (chats: Chat[]) => void
+  appendChat: (chats: Chat[]) => void
 }
 
-export const useChatStore = create<ChatStore>((set) => ({
+export const useChatHistoryStore = create<ChatHistoryStore>((set) => ({
   chats: [],
   addChat:(chat) => 
     set((state) => ({
       chats: [...state.chats, chat]
     })),
-    setChat:(chats) => 
-      set(() => ({
-        chats: chats
+    appendChat:(chats) => 
+      set((state) => ({
+        chats: [...state.chats, ...chats]
       }))
 }))
