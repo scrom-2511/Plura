@@ -39,7 +39,8 @@ export const useQwenStore = create<MessageStore>((set) => ({
 }));
 
 type Chat = {
-  chatName:string
+  chatName:string,
+  chatUUID:string
 }
 
 type ChatHistoryStore = {
