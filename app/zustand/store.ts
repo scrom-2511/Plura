@@ -38,11 +38,14 @@ export const useQwenStore = create<MessageStore>((set) => ({
     })),
 }));
 
+type Chat = {
+  chatName:string
+}
+
 type ChatStore = {
-  chats: {
-    chatName: string
-  }[],
-  addChat: (chat: {chatName:string}) => void
+  chats: Chat[]
+  addChat: (chat: Chat) => void
+  setChat: (chats: Chat[]) => void
 }
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -50,5 +53,9 @@ export const useChatStore = create<ChatStore>((set) => ({
   addChat:(chat) => 
     set((state) => ({
       chats: [...state.chats, chat]
-    }))
+    })),
+    setChat:(chats) => 
+      set(() => ({
+        chats: chats
+      }))
 }))
