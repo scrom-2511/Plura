@@ -38,7 +38,7 @@ export const useQwenStore = create<MessageStore>((set) => ({
     })),
 }));
 
-type Chat = {
+export type Chat = {
   chatName:string,
   chatUUID:string
 }
@@ -53,7 +53,7 @@ export const useChatHistoryStore = create<ChatHistoryStore>((set) => ({
   chats: [],
   addChat:(chat) => 
     set((state) => ({
-      chats: [...state.chats, chat]
+      chats: [chat, ...state.chats]
     })),
     appendChat:(chats) => 
       set((state) => ({

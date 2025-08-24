@@ -31,9 +31,9 @@ const LeftComponent = () => {
         </button>
         <input type="text" className="bg-primary w-full rounded-xl h-12 text-[13px] focus:outline-0 p-5" placeholder="Search..." />
       </div>
-      <div className="w-full h-full flex flex-col items-center gap-5 overflow-auto">
+      <div className="w-full h-full flex flex-col items-center gap-3 overflow-auto">
         {chats.map((chat) => (
-          <div key={chat.chatUUID} className="bg-primary rounded-xl w-full min-h-12 text-[12px] flex items-center hover:cursor-pointer p-5" onClick={()=> router.push(`/chat/${chat.chatUUID}`)}>
+          <div key={chat.chatUUID} className="bg-primary rounded-xl w-full min-h-12 h-15 text-[12px] flex items-center hover:cursor-pointer p-5" onClick={()=> router.push(`/chat/${chat.chatUUID}`)}>
             <h3>{chat.chatName}</h3>
           </div>
         ))}

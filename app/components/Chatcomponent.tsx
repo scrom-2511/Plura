@@ -1,42 +1,41 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useGptStore, useDeepseekStore, useMistralStore, useQwenStore } from "../zustand/store";
+import { useGptStore, useDeepseekStore, useMistralStore, useQwenStore, useChatHistoryStore, Chat } from "../zustand/store";
 import { v6 as uuidv6 } from "uuid";
 import PromptBox from "./PromptBox";
-import { useParams } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 
 const Chatcomponent = () => {
-  const url = useParams()
-  useEffect(()=>{
-    if(url.chatID && url.chatID != "newChat") setChatComponent(true)
-  },[])
-  
-  // GPT state
+  const url = useParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  useEffect(() => {
+    if (url.chatID && url.chatID != "newChat") setChatComponent(true);
+  }, []);
+
   const [gptResponse, setGptResponse] = useState<string>("");
   const [newConversationGpt, setNewConversationGpt] = useState<boolean>(false);
   const messagesGpt = useGptStore((state) => state.messages);
   const addConversationGpt = useGptStore((state) => state.addConversation);
 
-  // Deepseek state
   const [deepseekResponse, setDeepseekResponse] = useState<string>("");
   const [newConversationDeepseek, setNewConversationDeepseek] = useState<boolean>(false);
   const messagesDeepseek = useDeepseekStore((state) => state.messages);
   const addConversationDeepseek = useDeepseekStore((state) => state.addConversation);
 
-  // Mistral state
   const [mistralResponse, setMistralResponse] = useState<string>("");
   const [newConversationMistral, setNewConversationMistral] = useState<boolean>(false);
   const messagesMistral = useMistralStore((state) => state.messages);
   const addConversationMistral = useMistralStore((state) => state.addConversation);
 
-  // Qwen state
   const [qwenResponse, setQwenResponse] = useState<string>("");
   const [newConversationQwen, setNewConversationQwen] = useState<boolean>(false);
   const messagesQwen = useQwenStore((state) => state.messages);
   const addConversationQwen = useQwenStore((state) => state.addConversation);
 
-  // shared state
+  const {addChat} = useChatHistoryStore();
+  const [currentChatID, setCurrentChatID] = useState<string>("");
   const [chatComponent, setChatComponent] = useState<boolean>(false);
   const [currentPrompt, setCurrentPrompt] = useState<string>("");
   const [prompt, setPrompt] = useState<string>("");
@@ -46,11 +45,12 @@ const Chatcomponent = () => {
     setResponse: React.Dispatch<React.SetStateAction<string>>,
     addToStore: (msg: { prompt: string; response: string }) => void,
     setNewConversation: React.Dispatch<React.SetStateAction<boolean>>,
-    conversationID: string
+    conversationID: string,
+    chatID: string
   ) => {
     if (!prompt) return;
 
-    const data = { prompt, userID: 1, conversationID, chatID: "bpv060-chat-uuid" };
+    const data = { prompt, userID: 1, conversationID, chatID };
     const finalPrompt = prompt;
     let finalResponse = "";
 
@@ -88,7 +88,13 @@ const Chatcomponent = () => {
     if (!prompt) return;
     // setChatComponent(true)
     const newConversationID = uuidv6();
-
+    const newChatID = uuidv6();
+    if(pathname.includes("newChat")){
+      const chat:Chat = {chatName:"New Chat1", chatUUID:newChatID}
+      addChat(chat)
+      setCurrentChatID(newChatID)
+      router.push(`/chat/${newChatID}`)
+    }
 
     // await Promise.allSettled([
     //   streamModel("chatgpt", setGptResponse, addConversationGpt, setNewConversationGpt, newConversationID),
@@ -134,7 +140,6 @@ const Chatcomponent = () => {
       )}
       {!chatComponent && <NoChatComponent />}
 
-      {/* Textarea now in its own component */}
       <PromptBox prompt={prompt} setPrompt={setPrompt} handleOnClick={handleOnClick} />
     </>
   );
@@ -142,7 +147,6 @@ const Chatcomponent = () => {
 
 export default Chatcomponent;
 
-// 🔹 Reusable ChatPanel
 type ChatPanelProps = {
   title: string;
   messages: { prompt: string; response: string }[];
