@@ -1,11 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useGptStore, useDeepseekStore, useMistralStore, useQwenStore } from "../zustand/store";
 import { v6 as uuidv6 } from "uuid";
 import PromptBox from "./PromptBox";
+import { useParams } from "next/navigation";
 
 const Chatcomponent = () => {
+  const url = useParams()
+  useEffect(()=>{
+    if(url.chatID && url.chatID != "newChat") setChatComponent(true)
+  },[])
+  
   // GPT state
   const [gptResponse, setGptResponse] = useState<string>("");
   const [newConversationGpt, setNewConversationGpt] = useState<boolean>(false);
@@ -80,7 +86,7 @@ const Chatcomponent = () => {
 
   const handleOnClick = async () => {
     if (!prompt) return;
-    setChatComponent(true)
+    // setChatComponent(true)
     const newConversationID = uuidv6();
 
 
