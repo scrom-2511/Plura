@@ -15,7 +15,7 @@ export const POST = async (req: NextRequest) => {
             chatUUID: true
         },
         orderBy:{
-            createdAt:"desc"
+            updatedAt:"desc"
         },
         skip: (page - 1) * 10,
         take: 10
