@@ -1,12 +1,21 @@
 "use client";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
+import { chatHistory } from "../reqHandlers/chatHistory.reqHandler";
+import { useChatHistoryStore } from "../zustand/store";
 
 const LeftComponent = () => {
   const router = useRouter();
-  useEffect(()=>{
-    
-  })
+  const { chats, appendChat } = useChatHistoryStore();
+
+  useEffect(() => {
+    const getChatHistory = async () => {
+      const res = await chatHistory();
+      appendChat(res.data.data);
+      console.log(res);
+    };
+    getChatHistory();
+  }, []);
   return (
     <>
       <div className="w-full grid grid-rows-[150px_auto] p-5 py-10 overflow-hidden">
@@ -17,10 +26,11 @@ const LeftComponent = () => {
           <input type="text" className="bg-primary w-full rounded-xl h-12 text-[13px] focus:outline-0 p-5" placeholder="Search..." />
         </div>
         <div className="w-full h-full flex flex-col items-center gap-5 overflow-auto">
-          <div className="bg-primary rounded-xl w-full min-h-12 text-[12px] flex items-center hover:cursor-pointer p-5">
-            <h3>CHAT!</h3>
-            <p>hi</p>
-          </div>
+          {chats.map((chat) => (
+            <div key={chat.chatUUID} className="bg-primary rounded-xl w-full min-h-12 text-[12px] flex items-center hover:cursor-pointer p-5">
+              <h3>{chat.chatName}</h3>
+            </div>
+          ))}
         </div>
       </div>
     </>
