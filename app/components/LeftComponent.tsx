@@ -13,7 +13,8 @@ const LeftComponent = () => {
       const result = await chatHistory(1, 1);
       
       if (result.success) {
-        appendChat(result.data?.data);
+        console.log(result.data?.data.data)
+        appendChat(result.data?.data.data);
       } else {
         console.error("Failed to fetch chat history", result.error);
       }
