@@ -1,14 +1,17 @@
 import { ModelTypes } from "@/types/types";
 import { NextRequest, NextResponse } from "next/server";
 import { streamModel } from "../../utils/streamModel.utils";
+import { prisma } from "../../lib/prisma";
 
 export const POST = async (req: NextRequest) => {
-  const { prompt, userID } = await req.json();
-
+  const { prompt, userID, conversationID, chatID } = await req.json();
+  let finalRes:string = ""
   const stream = new ReadableStream({
-    start(controller) {
-      streamModel(ModelTypes.MISTRAL, controller, prompt, userID, process.env.OPEN_ROUTER_API_KEY2 as string);
+    async start(controller) {
+      finalRes = await streamModel(ModelTypes.MISTRAL, controller, prompt, userID, process.env.OPEN_ROUTER_API_KEY3 as string, chatID, conversationID) as string
     },
   });
-  return new NextResponse(stream)
+  const routeRes = new NextResponse(stream);
+  
+  return routeRes
 };
