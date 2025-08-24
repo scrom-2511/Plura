@@ -80,14 +80,16 @@ const Chatcomponent = () => {
 
   const handleOnClick = async () => {
     if (!prompt) return;
+    setChatComponent(true)
     const newConversationID = uuidv6();
 
-    await Promise.allSettled([
-      streamModel("chatgpt", setGptResponse, addConversationGpt, setNewConversationGpt, newConversationID),
-      streamModel("deepseek", setDeepseekResponse, addConversationDeepseek, setNewConversationDeepseek, newConversationID),
-      streamModel("mistral", setMistralResponse, addConversationMistral, setNewConversationMistral, newConversationID),
-      streamModel("qwen", setQwenResponse, addConversationQwen, setNewConversationQwen, newConversationID),
-    ]);
+
+    // await Promise.allSettled([
+    //   streamModel("chatgpt", setGptResponse, addConversationGpt, setNewConversationGpt, newConversationID),
+    //   streamModel("deepseek", setDeepseekResponse, addConversationDeepseek, setNewConversationDeepseek, newConversationID),
+    //   streamModel("mistral", setMistralResponse, addConversationMistral, setNewConversationMistral, newConversationID),
+    //   streamModel("qwen", setQwenResponse, addConversationQwen, setNewConversationQwen, newConversationID),
+    // ]);
   };
 
   return (
@@ -190,7 +192,7 @@ const NoChatComponent = () => {
         <div className="self-center text-center">MISTRAL</div>
       </div>
 
-      <div className="flex justify-center bg-primary rounded-2xl h-40 self-center">
+      <div className="flex justify-center bg-primary rounded-2xl h-40 self-center mb-4">
         <div className="self-center text-center">LLAMA</div>
       </div>
     </>
