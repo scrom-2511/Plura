@@ -1,9 +1,17 @@
-import { Message, ModelTypes } from "@/types/types";
-import { contextProvider, contextSetter } from "./redisHandler.utils";
+import { Message, modelFieldMap, ModelTypes } from "@/types/types";
+import { contextProvider, contextSetter } from "./contextHandler";
 import { prisma } from "../lib/prisma";
 
-export const streamModel = async (model: ModelTypes, controller: ReadableStreamDefaultController, prompt:string, userID:number, apikey:string, chatID: string, conversationID:string) => {
-  const context = await contextProvider(userID, model);
+export const streamModel = async (
+  model: ModelTypes,
+  controller: ReadableStreamDefaultController,
+  prompt: string,
+  userID: number,
+  apikey: string,
+  chatID: string,
+  conversationID: string
+) => {
+  const context = await contextProvider(userID, model, chatID);
   const systemContent = context
     ? `You are an AI assistant. Use the following context to maintain a natural, continuous flow in our conversation: ${context}. Do not greet me in every response. Avoid phrases like "from the context you provided"—your responses should feel seamless and conversational, as if you already know the context.`
     : "You are an AI assistant";
@@ -38,43 +46,34 @@ export const streamModel = async (model: ModelTypes, controller: ReadableStreamD
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
-        const conversation:Message = {prompt, response:finalResponse} 
-        await contextSetter(userID, context, model, conversation);
-        controller.close();
-        (async ()=>{
-          try {
-            await prisma.chat.upsert({
-              where: { chatUUID: chatID },
-              update: {},
-              create: {
-                chatUUID: chatID,
-                chatName: "New Chat",
-                userID,
-              },
-            });
-            const data: any = {
-              prompt,
+        const conversation: Message = { prompt, response: finalResponse };
+        await contextSetter(userID, context, model, conversation, chatID);
+
+        try {
+          await prisma.chat.upsert({
+            where: { chatUUID: chatID },
+            update: { updatedAt: new Date()},
+            create: { chatUUID: chatID, chatName: "New Chat", userID },
+          });
+          
+
+          await prisma.conversation.upsert({
+            where: { conversationID },
+            update: {
+              [modelFieldMap[model]]: finalResponse,
+            },
+            create: {
               conversationID,
               chatID,
               userID,
-            };
-            
-            if (model === ModelTypes.GPT) {
-              data.gpt = finalResponse;
-            } else if (model === ModelTypes.DEEPSEEK) {
-              data.deepseek = finalResponse;
-            } else if (model === ModelTypes.MISTRAL) {
-              data.mistral = finalResponse;
-            } else if (model === ModelTypes.QWEN) {
-              data.qwen = finalResponse;
-            }
-            
-            await prisma.conversation.create({ data });
-          } catch (error) {
-            console.error("Failed to save conversation:", error);
-          }
-        })()
-        return finalResponse
+              prompt,
+              [modelFieldMap[model]]: finalResponse,
+            },
+          });
+        } catch (error) {
+          console.error("Failed to save conversation:", error);
+        }
+        return finalResponse;
       }
 
       buffer += decoder.decode(value, { stream: true });
@@ -89,6 +88,7 @@ export const streamModel = async (model: ModelTypes, controller: ReadableStreamD
         if (line.startsWith("data: ")) {
           const data = line.slice(6);
           if (data === "[DONE]") {
+            controller.close();
             break;
           }
 
