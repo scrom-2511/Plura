@@ -7,13 +7,15 @@ import { useChatHistoryStore } from "../zustand/store";
 
 const LeftComponent = () => {
   const router = useRouter();
+  const hasLoadedRef = useRef(false);
+
 
   // Zustand store hooks
-  const { chats, appendChat } = useChatHistoryStore();
+  const { chats, appendChat, clearChat } = useChatHistoryStore();
   
   useEffect(() => {
-    console.log("LeftComponent mounted");
-  
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
     // Async function to fetch chat history for userID=1 and page=1
     const getChatHistory = async () => {
       try {
@@ -34,6 +36,9 @@ const LeftComponent = () => {
     };
   
     getChatHistory();
+    return () => {
+      clearChat()
+    }
   }, []);  
 
   return (
