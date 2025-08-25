@@ -113,6 +113,12 @@ type ChatHistoryStore = {
    * @param {Chat[]} chats - The chats to append.
    */
   appendChat: (chats: Chat[]) => void;
+
+  /**
+   * Clears the entire chat history.
+   * Removes all chats from the history array.
+   */
+  clearChat: () => void;
 };
 
 /**
@@ -132,12 +138,10 @@ export const useChatHistoryStore = create<ChatHistoryStore>((set) => ({
   },
 
   appendChat: (chats) => {
-    if (!Array.isArray(chats)) {
-      console.warn("Invalid chats array provided to appendChat");
-      return;
-    }
     set((state) => ({
       chats: [...state.chats, ...chats], // Append chats immutably
     }));
   },
+
+  clearChat: () => set({ chats: [] }), // Empties chats array
 }));

@@ -1,11 +1,13 @@
 "use client";
 
 import { signIn } from "@/app/reqHandlers/signin.reqHandler";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 const Signin = () => {
-  const [email, setEmail] = useState<number>(-1);
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const router = useRouter()
 
   const handleOnClickSignIn = async(e: React.FormEvent) => {
     e.preventDefault(); 
@@ -14,12 +16,12 @@ const Signin = () => {
         const res = await signIn(email, password);
   
         if (res?.success) {
-          // redirect or show success
+            router.push("/chat/newChat")
         } else {
           // handle error
         }
     }catch(e){
-
+        console.log(e)
     }
   
   };
@@ -33,7 +35,7 @@ const Signin = () => {
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
             <input
-              type="email"
+              type="imput"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
