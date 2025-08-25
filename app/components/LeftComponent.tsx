@@ -1,29 +1,24 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { chatHistory } from "../reqHandlers/chatHistory.reqHandler";
-import { useChatHistoryStore, useDeepseekStore, useGptStore, useMistralStore, useQwenStore } from "../zustand/store";
+import { useChatHistoryStore } from "../zustand/store";
 
 const LeftComponent = () => {
   const router = useRouter();
 
   // Zustand store hooks
   const { chats, appendChat } = useChatHistoryStore();
-
-  const clearGpt = useGptStore((state) => state.clearMessages);
-  const clearDeepseek = useDeepseekStore((state) => state.clearMessages);
-  const clearMistral = useMistralStore((state) => state.clearMessages);
-  const clearQwen = useQwenStore((state) => state.clearMessages);
-
-  // Fetch chat history on component mount
+  
   useEffect(() => {
+    console.log('LeftComponent mounted')
     const getChatHistory = async () => {
       const result = await chatHistory(1, 1);
 
       if (result.success) {
-        console.log(result.data?.data.data);
-        appendChat(result.data?.data.data);
+        console.log(result.data);
+        appendChat(result.data);
       } else {
         console.error("Failed to fetch chat history", result.error);
       }
@@ -31,14 +26,6 @@ const LeftComponent = () => {
 
     getChatHistory();
   }, []);
-
-  // Clear all messages from different model stores
-  const clearAllMessages = () => {
-    clearGpt();
-    clearDeepseek();
-    clearMistral();
-    clearQwen();
-  };
 
   return (
     <div className="w-full grid grid-rows-[150px_auto] p-5 py-10 overflow-hidden">
@@ -58,7 +45,6 @@ const LeftComponent = () => {
             className="bg-primary rounded-xl w-full min-h-15 h-15 text-[12px] flex items-center hover:cursor-pointer p-5"
             onClick={() => {
               router.push(`/chat/${chat.chatUUID}`);
-              clearAllMessages(); // Clear messages when switching chats
             }}
           >
             <h3>{chat.chatName}</h3>

@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const conversations = async (userID: number, chatID: string) => {
   try {
-    const res = await axios.post("http://localhost:3000/api/chat", {
+    const res = await axios.post("http://localhost:3000/api/conversations", {
       userID,
       chatID
     });

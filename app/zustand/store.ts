@@ -9,10 +9,12 @@ type MessageStore = {
 
 export const useGptStore = create<MessageStore>((set) => ({
   messages: [],
-  addConversation: (message) =>
+  addConversation: (message) =>{
+    console.log("I was called")
     set((state) => ({
       messages: [...state.messages, message],
-    })),
+    }))
+  },
   clearMessages: () => set({ messages: [] }),
 }));
 

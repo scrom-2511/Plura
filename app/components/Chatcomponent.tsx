@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useGptStore, useDeepseekStore, useMistralStore, useQwenStore, useChatHistoryStore, Chat } from "../zustand/store";
 import { v6 as uuidv6 } from "uuid";
 import PromptBox from "./PromptBox";
@@ -55,9 +55,16 @@ const Chatcomponent = () => {
     }
   }, []);
 
+  const clearGpt = useGptStore((state) => state.clearMessages);
+      const clearDeepseek = useDeepseekStore((state) => state.clearMessages);
+      const clearMistral = useMistralStore((state) => state.clearMessages);
+      const clearQwen = useQwenStore((state) => state.clearMessages);
+
   // ====== EFFECT: Fetch Conversations ======
   useEffect(() => {
     const getConversations = async () => {
+      if (pathname.includes("newChat")) return;
+
       const result = await conversations(1, url.chatID as string);
 
       if (result.success) {
@@ -94,6 +101,15 @@ const Chatcomponent = () => {
         response: entry.qwen || "There was an error getting the response.",
       });
     });
+    return () => {
+      const clearAllMessages = () => {
+        clearGpt();
+        clearDeepseek();
+        clearMistral();
+        clearQwen();
+      };
+      clearAllMessages();
+    };
   }, [conversation]);
 
   const streamModel = async (
