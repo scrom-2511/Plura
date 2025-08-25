@@ -1,17 +1,8 @@
 import { Message, modelFieldMap, ModelTypes } from "@/types/types";
-import { createClient } from "redis";
 import { prisma } from "../lib/prisma";
+import { client, connectClient } from "./redisClient.utils";
 
-const client = createClient();
 
-/**
- * Connects the Redis client if not already connected.
- */
-const connectClient = async (): Promise<void> => {
-  if (!client.isOpen) {
-    await client.connect();
-  }
-};
 
 /**
  * Provides the cached conversation context or fetches it from the database.
@@ -31,6 +22,7 @@ export const contextProvider = async (
     throw new Error("Invalid parameters: userID, model, and chatID are required");
   }
 
+  // Connect to the redis client if not already connected.
   await connectClient();
 
   // Compose cache key using user, model, and chat identifiers
@@ -96,6 +88,7 @@ export const contextSetter = async (
     throw new Error("Invalid conversation parameter");
   }
 
+  // Connect to the redis client if not already connected.
   await connectClient();
 
   const cacheKey = `${userID}:${model}:${chatID}`;
