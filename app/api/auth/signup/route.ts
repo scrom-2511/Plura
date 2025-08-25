@@ -1,23 +1,40 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/api/lib/prisma";
 
-export const POST = async (req: Request) => {
+/**
+ * Handles user sign-up.
+ *
+ * @param {Request} req - The incoming HTTP request containing new user data.
+ * @return {Promise<NextResponse>} - JSON response indicating sign-up result.
+ */
+export const POST = async (req: Request): Promise<NextResponse> => {
   try {
+    // Parse and validate input
     const { email, username, password } = await req.json();
 
-    if (!email || !username || !password) {
-      return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+    if (
+      typeof email !== "string" ||
+      typeof username !== "string" ||
+      typeof password !== "string"
+    ) {
+      return NextResponse.json(
+        { message: "Missing or invalid required fields" },
+        { status: 400 }
+      );
     }
 
+    // Create new user in the database
     await prisma.user.create({
       data: { email, username, password },
     });
 
+    // Return successful response
     return NextResponse.json(
       { message: "Signup Successful", success: true },
       { status: 201 }
     );
   } catch (error) {
+    // Handle server errors
     console.error("Signup Error:", error);
     return NextResponse.json(
       { message: "Internal Server Error", success: false },
