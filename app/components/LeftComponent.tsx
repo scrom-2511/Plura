@@ -5,9 +5,6 @@ import { useRouter } from "next/navigation";
 import { chatHistory } from "../reqHandlers/chatHistory.reqHandler";
 import { useChatHistoryStore, useDeepseekStore, useGptStore, useMistralStore, useQwenStore } from "../zustand/store";
 
-// ==========================
-// LeftComponent
-// ==========================
 const LeftComponent = () => {
   const router = useRouter();
 
@@ -22,11 +19,11 @@ const LeftComponent = () => {
   // Fetch chat history on component mount
   useEffect(() => {
     const getChatHistory = async () => {
-      const result = await chatHistory(1, 1); // Parameters could be page & limit
+      const result = await chatHistory(1, 1);
 
       if (result.success) {
-        console.log(result.data?.data.data); // Log chat data (can be removed in prod)
-        appendChat(result.data?.data.data); // Add chat history to Zustand store
+        console.log(result.data?.data.data);
+        appendChat(result.data?.data.data);
       } else {
         console.error("Failed to fetch chat history", result.error);
       }
