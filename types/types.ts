@@ -18,3 +18,17 @@ export type Message = {
   prompt: string;
   response: string;
 };
+
+export type ConversationEntry = {
+  id: number;
+  conversationID: string;
+  prompt: string;
+  gpt: string | null;
+  deepseek: string | null;
+  mistral: string | null;
+  qwen: string | null;
+  userID: number;
+  chatID: string;
+  createdAt: string;
+  updatedAt: string;
+};

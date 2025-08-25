@@ -4,6 +4,7 @@ import { create } from "zustand";
 type MessageStore = {
   messages: Message[];
   addConversation: (message: Message) => void;
+  clearMessages: () => void;
 };
 
 export const useGptStore = create<MessageStore>((set) => ({
@@ -12,6 +13,7 @@ export const useGptStore = create<MessageStore>((set) => ({
     set((state) => ({
       messages: [...state.messages, message],
     })),
+  clearMessages: () => set({ messages: [] }),
 }));
 
 export const useDeepseekStore = create<MessageStore>((set) => ({
@@ -20,6 +22,7 @@ export const useDeepseekStore = create<MessageStore>((set) => ({
     set((state) => ({
       messages: [...state.messages, message],
     })),
+  clearMessages: () => set({ messages: [] }),
 }));
 
 export const useMistralStore = create<MessageStore>((set) => ({
@@ -28,6 +31,7 @@ export const useMistralStore = create<MessageStore>((set) => ({
     set((state) => ({
       messages: [...state.messages, message],
     })),
+  clearMessages: () => set({ messages: [] }),
 }));
 
 export const useQwenStore = create<MessageStore>((set) => ({
@@ -36,7 +40,9 @@ export const useQwenStore = create<MessageStore>((set) => ({
     set((state) => ({
       messages: [...state.messages, message],
     })),
+  clearMessages: () => set({ messages: [] }),
 }));
+
 
 export type Chat = {
   chatName:string,
