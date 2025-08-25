@@ -2,6 +2,7 @@ import { ModelTypes } from "@/types/types";
 import { NextRequest, NextResponse } from "next/server";
 import { streamModel } from "../../utils/streamModel.utils";
 import { prisma } from "../../lib/prisma";
+import { userCheck } from "../../utils/userCheck.utils";
 
 /**
  * Handles POST request to stream a DEEPSEEK model response.
@@ -14,7 +15,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
   const { prompt, userID, conversationID, chatID } = await req.json();
 
   if (
-    typeof prompt !== "string" || 
+    typeof prompt !== "string" ||
     !prompt.trim() ||
     typeof userID !== "number" ||
     typeof conversationID !== "string" ||
@@ -23,22 +24,18 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
     return new NextResponse("Invalid input parameters", { status: 400 });
   }
 
-  let finalRes = "";
+  // Check if a user is paid or not, if not paid then return
+  const user = await userCheck(userID);
+  if (!user) {
+    return NextResponse.json({ message: "You are not a paid user. Please pay to use our services.", success: false });
+  }
 
   // Create a readable stream to handle streaming model output
   const stream = new ReadableStream({
     async start(controller) {
       try {
         // Stream the DEEPSEEK model response with API key #2
-        finalRes = (await streamModel(
-          ModelTypes.DEEPSEEK,
-          controller,
-          prompt,
-          userID,
-          process.env.OPEN_ROUTER_API_KEY2 as string,
-          chatID,
-          conversationID
-        )) as string;
+        await streamModel(ModelTypes.DEEPSEEK, controller, prompt, userID, process.env.OPEN_ROUTER_API_KEY2 as string, chatID, conversationID);
       } catch (error) {
         // Close the stream controller on error
         controller.error(error);
