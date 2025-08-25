@@ -24,7 +24,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
         userID,
       },
       orderBy: {
-        updatedAt: "desc",
+        updatedAt: "asc",
       },
     });
 
