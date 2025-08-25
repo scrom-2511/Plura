@@ -59,34 +59,55 @@ const Chatcomponent = () => {
   // ====== CHAT HISTORY STORE ======
   const { addChat } = useChatHistoryStore();
 
+  // ====== EFFECT: Set Current Chat ID ======
+  useEffect(() => {
+    setCurrentChatID(url.chatID as string);
+  }, [url.chatID]);
+
+  // ====== EFFECT: Handle Pending Prompt from SessionStorage ======
+  useEffect(() => {
+    if (!url.chatID || pathname.includes("newChat")) return;
+    console.log("Checking for pending prompt...");
+
+    const pendingPrompt = sessionStorage.getItem("pendingPrompt");
+    if (pendingPrompt) {
+      // Set up the UI state for the new chat
+      setCurrentPrompt(pendingPrompt);
+      setChatComponent(true);
+      setPrompt(""); // Clear the input
+      
+      // Remove from sessionStorage
+      sessionStorage.removeItem("pendingPrompt");
+
+      const newConversationID = uuidv6();
+      
+      // Start streaming with the retrieved prompt
+      startStreaming(newConversationID, url.chatID as string, pendingPrompt);
+    }else{
+      const getConversations = async () => {
+        try {
+          const result = await conversations(1, url.chatID as string);
+          if (result.success) {
+            // Store fetched conversations
+            setConversations(result.data.data);
+          } else {
+            console.error("Failed to fetch chat history", result.error);
+          }
+        } catch (error) {
+          console.error("Error fetching conversations:", error);
+        }
+      };
+  
+      getConversations();
+    }
+  }, [url.chatID, pathname]);
+
   // ====== EFFECT: Check Chat ID on Mount ======
   useEffect(() => {
     if (url.chatID && url.chatID !== "newChat") {
       setChatComponent(true);
     }
   }, [url.chatID]);
-
-  // ====== EFFECT: Fetch Conversations ======
-  useEffect(() => {
-    const getConversations = async () => {
-      // Avoid fetching if it's a new chat
-      if (pathname.includes("newChat") || !url.chatID) return;
-
-      try {
-        const result = await conversations(1, url.chatID as string);
-        if (result.success) {
-          // Store fetched conversations
-          setConversations(result.data.data);
-        } else {
-          console.error("Failed to fetch chat history", result.error);
-        }
-      } catch (error) {
-        console.error("Error fetching conversations:", error);
-      }
-    };
-
-    getConversations();
-  }, [pathname, url.chatID]);
 
   // ====== EFFECT: Load Conversations into Stores & Cleanup ======
   useEffect(() => {
@@ -129,6 +150,7 @@ const Chatcomponent = () => {
    * @param setNewConversation - React state setter to track new conversation status.
    * @param conversationID - Unique conversation identifier.
    * @param chatID - Current chat identifier.
+   * @param promptText - Optional prompt text to use instead of component state.
    */
   const streamModel = async (
     model: string,
@@ -136,17 +158,25 @@ const Chatcomponent = () => {
     addToStore: (msg: { prompt: string; response: string }) => void,
     setNewConversation: React.Dispatch<React.SetStateAction<boolean>>,
     conversationID: string,
-    chatID: string
+    chatID: string,
+    promptText?: string
   ): Promise<void> => {
+    // Use provided prompt or fall back to component state
+    const promptToUse = promptText || prompt;
+    
     // Input validation: do not proceed if prompt is empty
-    if (!prompt.trim()) return;
+    if (!promptToUse.trim()) return;
 
-    const data = { prompt, userID: 1, conversationID, chatID };
-    const finalPrompt = prompt;
+    const data = { prompt: promptToUse, userID: 1, conversationID, chatID };
+    const finalPrompt = promptToUse;
     let finalResponse = "";
 
-    setCurrentPrompt(prompt);
-    setPrompt(""); // Clear prompt input
+    // Only set current prompt and clear input if no prompt was provided (normal flow)
+    if (!promptText) {
+      setCurrentPrompt(promptToUse);
+      setPrompt(""); // Clear prompt input
+    }
+    
     setNewConversation(true); // Mark new conversation as in-progress
 
     try {
@@ -189,28 +219,43 @@ const Chatcomponent = () => {
    * Handles submit button click to start conversation streams.
    */
   const handleOnClick = async (): Promise<void> => {
-    if (!prompt.trim()) return; // Validate prompt input
+    if (!prompt.trim()) return;
 
-    // Generate new unique IDs for conversation and chat
     const newConversationID = uuidv6();
     let newChatID = currentChatID;
 
-    // If on newChat path, create new chat entry and route to it
     if (pathname.includes("newChat")) {
+      // Generate new Chat ID
       newChatID = uuidv6();
-      const chat: Chat = { chatName: "New Chat1", chatUUID: newChatID };
+
+      const chat: Chat = { chatName: "New Chat", chatUUID: newChatID };
+      
       addChat(chat);
-      setCurrentChatID(newChatID);
+
+      // Save the prompt temporarily in sessionStorage
+      sessionStorage.setItem("pendingPrompt", prompt);
+
+      // Navigate to new chat page
       router.push(`/chat/${newChatID}`);
-      setChatComponent(true);
+      return; // Stop here, let the new page handle streaming
     }
 
-    // Start streaming responses from all models concurrently
+    // If we're already inside a chat (not newChat), start streaming directly
+    startStreaming(newConversationID, newChatID);
+  };
+
+  /**
+   * Unified streaming function that handles both normal and sessionStorage flows.
+   * @param conversationID - Unique conversation identifier.
+   * @param chatID - Current chat identifier.
+   * @param promptText - Optional prompt text for sessionStorage flow.
+   */
+  const startStreaming = async (conversationID: string, chatID: string, promptText?: string) => {
     await Promise.allSettled([
-      streamModel("chatgpt", setGptResponse, addConversationGpt, setNewConversationGpt, newConversationID, newChatID),
-      streamModel("deepseek", setDeepseekResponse, addConversationDeepseek, setNewConversationDeepseek, newConversationID, newChatID),
-      streamModel("mistral", setMistralResponse, addConversationMistral, setNewConversationMistral, newConversationID, newChatID),
-      streamModel("qwen", setQwenResponse, addConversationQwen, setNewConversationQwen, newConversationID, newChatID),
+      streamModel("chatgpt", setGptResponse, addConversationGpt, setNewConversationGpt, conversationID, chatID, promptText),
+      streamModel("deepseek", setDeepseekResponse, addConversationDeepseek, setNewConversationDeepseek, conversationID, chatID, promptText),
+      streamModel("mistral", setMistralResponse, addConversationMistral, setNewConversationMistral, conversationID, chatID, promptText),
+      streamModel("qwen", setQwenResponse, addConversationQwen, setNewConversationQwen, conversationID, chatID, promptText),
     ]);
   };
 
