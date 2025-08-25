@@ -12,20 +12,29 @@ const LeftComponent = () => {
   const { chats, appendChat } = useChatHistoryStore();
   
   useEffect(() => {
-    console.log('LeftComponent mounted')
+    console.log("LeftComponent mounted");
+  
+    // Async function to fetch chat history for userID=1 and page=1
     const getChatHistory = async () => {
-      const result = await chatHistory(1, 1);
-
-      if (result.success) {
-        console.log(result.data);
-        appendChat(result.data);
-      } else {
-        console.error("Failed to fetch chat history", result.error);
+      try {
+        const result = await chatHistory(1, 1);
+  
+        if (result.success) {
+          // On success, log data and update chat state
+          console.log(result.data.data);
+          appendChat(result.data.data);
+        } else {
+          // Log error if API call was unsuccessful
+          console.error("Failed to fetch chat history", result.error);
+        }
+      } catch (err) {
+        // Catch any unexpected errors
+        console.error("Unexpected error fetching chat history:", err);
       }
     };
-
+  
     getChatHistory();
-  }, []);
+  }, []);  
 
   return (
     <div className="w-full grid grid-rows-[150px_auto] p-5 py-10 overflow-hidden">

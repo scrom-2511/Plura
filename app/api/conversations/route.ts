@@ -1,30 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../lib/prisma";
 
-export const POST = async (req: NextRequest) => {
+/**
+ * Handles POST request to fetch conversations by chatID and userID.
+ *
+ * @param {NextRequest} req - Incoming request with JSON body containing chatID and userID.
+ * @returns {Promise<NextResponse>} JSON response with conversations data or error message.
+ */
+export const POST = async (req: NextRequest): Promise<NextResponse> => {
   try {
+    // Parse request body for chatID and userID
     const { chatID, userID } = await req.json();
 
+    // Validate required inputs
     if (!chatID || !userID) {
       return NextResponse.json({ error: "Invalid input", success: false }, { status: 400 });
     }
 
+    // Query conversations matching chatID and userID, ordered by most recently updated
     const chats = await prisma.conversation.findMany({
       where: {
         chatID,
-        userID
+        userID,
       },
       orderBy: {
-        updatedAt: "desc"
-      }
+        updatedAt: "desc",
+      },
     });
 
+    // Return successful response with conversation data
     return NextResponse.json({ data: chats, success: true });
   } catch (error) {
+    // Log error details for debugging
     console.error("Error fetching conversations:", error);
-    return NextResponse.json(
-      { error: "Something went wrong", success: false },
-      { status: 500 }
-    );
+
+    // Return generic error response to client
+    return NextResponse.json({ error: "Something went wrong", success: false }, { status: 500 });
   }
 };

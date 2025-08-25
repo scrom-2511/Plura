@@ -32,3 +32,9 @@ export type ConversationEntry = {
   createdAt: string;
   updatedAt: string;
 };
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T | null;
+  error?: any;
+}

@@ -1,6 +1,13 @@
 import LeftComponent from "@/app/components/LeftComponent";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+/**
+ * Root layout component that wraps the application.
+ * 
+ * @param {object} props - Component props
+ * @param {React.ReactNode} props.children - Dynamic content to render on the right side
+ */
+const RootLayout = ({ children }: { children: React.ReactNode }) => {
+  // Render the main layout with a fixed left component and dynamic right content
   return (
     <html lang="en">
       <body>
@@ -16,4 +23,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </body>
     </html>
   );
-}
+};
+
+export default RootLayout;
