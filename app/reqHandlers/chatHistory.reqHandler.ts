@@ -10,6 +10,6 @@ export const chatHistory = async (userID: number, page: number) => {
     return { success: true, data: res };
   } catch (error) {
     console.error("Request failed in chatHistory:", error);
-    return { success: false, error }; // return error for consistent handling
+    return { success: false, error };
   }
 };
