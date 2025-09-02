@@ -12,7 +12,7 @@ model User {
   username     String
   email        String         @unique
   password     String
-  premium       Boolean        @default(false)
+  premium      Boolean        @default(false)
   chats        Chat[]
   Conversation Conversation[]
 }
@@ -41,5 +41,6 @@ model Chat {
   userID        Int
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  deleted       Boolean        @default(false)
   conversations Conversation[]
 }

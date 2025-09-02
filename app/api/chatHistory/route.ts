@@ -18,7 +18,7 @@ export const POST = async (req: NextRequest): Promise<NextResponse> => {
 
   // Fetch chat history from the database with pagination and ordering
   const chatHistory = await prisma.chat.findMany({
-    where: { userID },
+    where: { userID, deleted: false },
     select: {
       chatName: true,
       chatUUID: true,
