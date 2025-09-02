@@ -1,4 +1,5 @@
 import { Message } from "@/types/types";
+import { number } from "zod";
 import { create } from "zustand";
 
 type MessageStore = {
@@ -145,3 +146,25 @@ export const useChatHistoryStore = create<ChatHistoryStore>((set) => ({
 
   clearChat: () => set({ chats: [] }), // Empties chats array
 }));
+
+export type OptionsMenu = {
+  x: number;
+  y: number;
+  visibility: boolean;
+  componentID: string;
+
+}
+
+type OptionsMenuStore = {
+  options : OptionsMenu;
+  setOptions: (options: OptionsMenu) => void;
+}
+
+export const useOptionsMenuStore = create<OptionsMenuStore>((set) => ({
+  options:{x: Number.MIN_SAFE_INTEGER, y: Number.MIN_SAFE_INTEGER, componentID:"", visibility: true},
+  setOptions: (options: OptionsMenu) => {
+    set((state) => ({
+      options
+    }))
+  }
+}))

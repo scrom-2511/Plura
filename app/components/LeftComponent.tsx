@@ -3,11 +3,13 @@
 import React, { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { chatHistory } from "../reqHandlers/chatHistory.reqHandler";
-import { useChatHistoryStore } from "../zustand/store";
+import { OptionsMenu, useChatHistoryStore, useOptionsMenuStore } from "../zustand/store";
 
 const LeftComponent = () => {
   const router = useRouter();
   const hasLoadedRef = useRef(false);
+
+  const setOptionsMenu = useOptionsMenuStore((state) => state.setOptions)
 
 
   // Zustand store hooks
@@ -39,7 +41,13 @@ const LeftComponent = () => {
     return () => {
       clearChat()
     }
-  }, []);  
+  }, []);
+
+  const handleOnClickMenu = (e: React.MouseEvent<HTMLDivElement>, componentID: string) => {
+    e.stopPropagation();
+    const options: OptionsMenu =  {x: e.clientX, y: e.clientY, componentID, visibility:true}
+    setOptionsMenu(options)
+  }
 
   return (
     <div className="w-full grid grid-rows-[150px_auto] p-5 py-10 overflow-hidden">
@@ -56,12 +64,13 @@ const LeftComponent = () => {
         {chats.map((chat) => (
           <div
             key={chat.chatUUID}
-            className="bg-primary rounded-xl w-full min-h-15 h-15 text-[12px] flex items-center hover:cursor-pointer p-5"
+            className="bg-primary rounded-xl w-full min-h-15 h-15 text-[12px] flex justify-between hover:cursor-pointer p-5"
             onClick={() => {
               router.push(`/chat/${chat.chatUUID}`);
             }}
           >
             <h3>{chat.chatName}</h3>
+            <img src="/menu.svg" alt="" className="invert h-5" onClick={(e) => handleOnClickMenu(e, chat.chatUUID)}/>
           </div>
         ))}
       </div>

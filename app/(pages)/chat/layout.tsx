@@ -1,4 +1,5 @@
 import LeftComponent from "@/app/components/LeftComponent";
+import OptionsComponent from "@/app/components/OptionsComponent";
 
 /**
  * Root layout component for /chat routes.
@@ -8,15 +9,16 @@ import LeftComponent from "@/app/components/LeftComponent";
  */
 const ChatLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="h-screen w-screen grid grid-cols-[15%_85%]">
-      {/* Left loads ONCE and persists */}
-      <LeftComponent />
+    <>
+    <OptionsComponent/>
+      <div className="h-screen w-screen grid grid-cols-[15%_85%]">
+        {/* Left loads ONCE and persists */}
+        {/* <LeftComponent /> */}
 
-      {/* Right side is dynamic and changes with routing */}
-      <div className="grid grid-cols-4 grid-rows-[auto_100px] gap-3 p-10 max-h-full h-full overflow-hidden">
-        {children}
+        {/* Right side is dynamic and changes with routing */}
+        <div className="grid grid-cols-4 grid-rows-[auto_100px] gap-3 p-10 max-h-full h-full overflow-hidden">{children}</div>
       </div>
-    </div>
+    </>
   );
 };
 
