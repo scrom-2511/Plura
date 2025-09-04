@@ -1,29 +1,36 @@
 "use client";
 
-import { signIn } from "@/app/reqHandlers/signin.reqHandler";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 const Signin = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const router = useRouter()
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  const handleOnClickSignIn = async(e: React.FormEvent) => {
-    e.preventDefault(); 
-    
+  const handleOnClickSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
     try {
-        const res = await signIn(email, password);
-  
-        if (res?.success) {
-            router.push("/chat/newChat")
-        } else {
-          // handle error
-        }
-    }catch(e){
-        console.log(e)
+      const res = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+        callbackUrl: "/chat/newChat",
+      });
+
+      if (res?.error) {
+        setError("Invalid email or password");
+      } else {
+        router.push("/chat/newChat");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong, please try again.");
     }
-  
   };
 
   return (
@@ -35,7 +42,7 @@ const Signin = () => {
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
             <input
-              type="imput"
+              type="email"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -55,6 +62,8 @@ const Signin = () => {
               required
             />
           </div>
+
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
           <button
             type="submit"
