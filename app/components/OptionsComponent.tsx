@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { OptionsMenu, useOptionsMenuStore } from "../zustand/store";
 import { deleteChat } from "../reqHandlers/deleteChat.reqHandlers";
 import { renameChat } from "../reqHandlers/renameChat.reqHandlers";
@@ -13,12 +13,12 @@ const OptionsComponent = () => {
    * Zustand Global Store State
    * ============================ */
   const options = useOptionsMenuStore((state) => state.options);
-  const optionsMenu = useOptionsMenuStore((state) => state.options);
+  const setOptionsMenu = useOptionsMenuStore((state) => state.setOptions);
 
   /* ============================
    * Local Component State
    * ============================ */
-  const [renameComponent, setRenameComponent] = useState<boolean>(true);
+  const [renameComponent, setRenameComponent] = useState<boolean>(false);
   const [newName, setNewName] = useState<string>("");
 
   /* ============================
@@ -28,8 +28,9 @@ const OptionsComponent = () => {
   /**
    * Handles deleting a chat based on current options
    */
-  const handleOnClickDeleteChat = async (): Promise<void> => {
+  const handleOnClickDeleteOptionClick = async (): Promise<void> => {
     try {
+      setOptionsMenu({ ...options, visibility: false });
       await deleteChat(options); // Call API to delete chat
     } catch (error) {
       console.error("Failed to delete chat:", error); // Error logging
@@ -40,6 +41,7 @@ const OptionsComponent = () => {
    * Opens rename input field
    */
   const handleOnClickRenameOptionClick = (): void => {
+    setOptionsMenu({ ...options, visibility: false });
     setRenameComponent(true); // Show rename input UI
   };
 
@@ -61,6 +63,43 @@ const OptionsComponent = () => {
     }
   };
 
+  // Ref for rename modal
+  const renameRef = useRef<HTMLDivElement>(null);
+
+  // Close modal when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (renameRef.current && !renameRef.current.contains(e.target as Node)) {
+        setRenameComponent(false);
+      }
+    };
+
+    if (renameComponent) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [renameComponent]);
+
+  const optionsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (optionsRef.current && !optionsRef.current.contains(e.target as Node)) {
+        setOptionsMenu({ ...options, visibility: false });
+      }
+    };
+    if (optionsRef) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [options]);
+
   /* ============================
    * Render UI
    * ============================ */
@@ -68,7 +107,10 @@ const OptionsComponent = () => {
     <>
       {/* Rename Chat Modal */}
       {renameComponent && (
-        <div className="absolute bg-primary h-auto w-80 rounded-xl text-[12px] p-7 shadow-[0_0px_20px_rgba(255,0,0,0)] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+        <div
+          ref={renameRef}
+          className="absolute bg-primary h-auto w-80 rounded-xl text-[12px] p-7 shadow-[0_0px_20px_rgba(255,0,0,0)] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
+        >
           <h1 className="pb-5">RENAME CHAT</h1>
           <input
             type="text"
@@ -82,11 +124,12 @@ const OptionsComponent = () => {
 
       {/* Options Menu (Rename / Delete) */}
       <div
+        ref={optionsRef}
         className="absolute bg-primary h-20 w-40 grid grid-rows-2 rounded-xl top-52 items-center text-[12px] px-3 shadow-[0_0px_20px_rgba(255,0,0,0)]"
-        style={{ display: optionsMenu.visibility ? "grid" : "none" }} // Show/hide menu
+        style={{ display: options.visibility ? "grid" : "none", top: options.y, left: options.x }}
       >
         <div onClick={handleOnClickRenameOptionClick}>RENAME</div>
-        <div onClick={handleOnClickDeleteChat}>DELETE CHAT</div>
+        <div onClick={handleOnClickDeleteOptionClick}>DELETE CHAT</div>
       </div>
     </>
   );

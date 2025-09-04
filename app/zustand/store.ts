@@ -152,7 +152,6 @@ export type OptionsMenu = {
   y: number;
   visibility: boolean;
   componentID: string;
-
 }
 
 type OptionsMenuStore = {
@@ -161,7 +160,7 @@ type OptionsMenuStore = {
 }
 
 export const useOptionsMenuStore = create<OptionsMenuStore>((set) => ({
-  options:{x: Number.MIN_SAFE_INTEGER, y: Number.MIN_SAFE_INTEGER, componentID:"", visibility: true},
+  options:{x: Number.MIN_SAFE_INTEGER, y: Number.MIN_SAFE_INTEGER, componentID:"", visibility: false},
   setOptions: (options: OptionsMenu) => {
     set((state) => ({
       options
